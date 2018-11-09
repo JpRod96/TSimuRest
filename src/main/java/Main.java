@@ -1,9 +1,15 @@
 package main.java;
 
+import MailVoice.Mailbox;
+import com.google.gson.Gson;
+
+import java.util.ArrayList;
+
 import static spark.Spark.*;
 
 public class Main {
     public static void main(String[] args){
+        ArrayList<String> answers=new ArrayList<>();
         ProcessBuilder process = new ProcessBuilder();
         Integer port;
         if (process.environment().get("PORT") != null) {
@@ -31,10 +37,37 @@ public class Main {
             return "Id= "+input;
         });
 
-        /*get("/mailboxs/:id", (request, response) -> {
+        post("/answer/:answer", (request, response) -> {
+            String answer=request.params(":answer");
+            answers.add(answer);
+            return answer;
+        });
+
+        get("/mailbox/:id", (request, response) -> {
             response.type("application/json");
             String input=request.params(":id");
-            return new Gson().toJson(input);
-        });*/
+            int id=Integer.parseInt(input);
+            Mailbox mailbox=new Mailbox("123","hey there",id);
+            return new Gson().toJson(mailbox);
+        });
+
+        get("/answers", (request, response) -> {
+            response.type("application/json");
+            return new Gson().toJson(answers);
+        });
+
+        get("/clear", (request, response) -> {
+            response.type("application/json");
+            answers.clear();
+            return new Gson().toJson(answers);
+        });
+
+        get("/loveMessage",(request, response)->{
+           return "<div style='text-align:center'>" +
+                       "<p>En un día tan bello como hoy...</p> " +
+                       "<p>Me gustaría preguntarte...</p> " +
+                       "<p><strong>¿Quieres que estemos juntos por el resto de nuestras vidas?</strong></p>" +
+                   "</div>";
+        });
     }
 }

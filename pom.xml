@@ -19,6 +19,11 @@
             <artifactId>gson</artifactId>
             <version>2.8.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.arqui</groupId>
+            <artifactId>voiceMail</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -58,15 +63,15 @@
             <plugin>
                 <groupId>com.heroku.sdk</groupId>
                 <artifactId>heroku-maven-plugin</artifactId>
-                <version>1.1.3</version>
+                <version>0.4.4</version>
                 <configuration>
                     <jdkVersion>1.8</jdkVersion>
                     <!-- Use your own application name -->
-                    <appName>Proyecto</appName>
+                    <appName>pruebatsimu</appName>
                     <processTypes>
                         <!-- Tell Heroku how to launch your application -->
                         <!-- You might have to remove the ./ in front   -->
-                        <web>java -jar ./target/Proyecto-0.0.1-SNAPSHOT-jar-with-dependencies.jar</web>
+                        <web>java -jar target/Proyecto-0.0.1-SNAPSHOT-jar-with-dependencies.jar</web>
                     </processTypes>
                 </configuration>
             </plugin>
