@@ -1,15 +1,24 @@
 package main.java;
 
-import MailVoice.Mailbox;
+import Builder.RandomProcessBuilder;
+import Modelo.Event;
+import Modelo.ProcessConstructor;
+import Modelo.StatesNames;
 import com.google.gson.Gson;
+import main.java.Util.JsonEvent;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import static spark.Spark.*;
 
 public class Main {
     public static void main(String[] args){
         ArrayList<String> answers=new ArrayList<>();
+        ArrayList<Event> events=new ArrayList<>();
+        ProcessConstructor constructor=new RandomProcessBuilder();
+        Gson gson=new Gson();
+
         ProcessBuilder process = new ProcessBuilder();
         Integer port;
         if (process.environment().get("PORT") != null) {
@@ -22,33 +31,59 @@ public class Main {
 
         get("/", (req,res)->{
             return "" +
-                    " <h1>Bienvenido a Voice Mail API</h1>" +
+                    " <h1>Bienvenido a TSS API</h1>" +
                     " <h2>Servicios disponibles: </h2" +
-                    " <h3> <h3>obtener todos los mailbox(GET): </h3></h3> <p>/mailboxs</p>" +
-                    " <h3>obtener mailbox por ID(GET): </h3> <p>/mailboxs/:id</p>" +
-                    " <h3>editar mailbox(PUT): </h3> <p>/mailboxs/:id</p>" +
-                    " <h3>crear mensajes(POST): </h3> <p>/messages</p>" +
-                    " <h3>eliminar mensaje(DELETE): </h3> <p>/messages/:id</p>" +
-                    "";
+                    " <h3><h3>";
         });
 
-        get("/prueba/:id", (request, response) -> {
-            String input=request.params(":id");
-            return "Id= "+input;
+        post("/event", (request, response) -> {
+            response.type("application/json");
+            JsonEvent eventDTO = gson.fromJson(request.body(), JsonEvent.class);
+
+            String eventDescription=eventDTO.getEventDescription();
+            String eventLocationDescription=eventDTO.getLocationDescription();
+            Date eventDate=new Date(eventDTO.getTimeMsEventDate());
+            long systemMs=System.currentTimeMillis();
+            Date eventDelationDate=new Date(systemMs);
+            String initialStateName=eventDTO.getInitialState();
+            StatesNames initialState;
+            if(initialStateName.equalsIgnoreCase("FELCV")){
+                initialState=StatesNames.FELCV;
+            }else {
+                initialState=StatesNames.MINISTERIO_PUBLICO;
+            }
+            Event event=new Event(eventDescription,
+                                  eventLocationDescription,
+                                  eventDate,
+                                  eventDelationDate,
+                                  constructor,
+                                  initialState);
+            events.add(event);
+
+            return gson.toJson(event);
         });
+
+        get("/event/:pos", (request, response) -> {
+            response.type("application/json");
+            int pos=Integer.parseInt(request.params(":pos"));
+            if(((events.size()-1)>=pos)&&pos>=0){
+                return gson.toJson(events.get(pos));
+            }else {
+                return gson.toJson(null);
+            }
+        });
+
+        get("/events", (request, response) -> {
+            response.type("application/json");
+            return gson.toJson(events);
+        });
+
+        //loveService
 
         post("/answer/:answer", (request, response) -> {
             String answer=request.params(":answer");
             answers.add(answer);
             return answer;
-        });
-
-        get("/mailbox/:id", (request, response) -> {
-            response.type("application/json");
-            String input=request.params(":id");
-            int id=Integer.parseInt(input);
-            Mailbox mailbox=new Mailbox("123","hey there",id);
-            return new Gson().toJson(mailbox);
         });
 
         get("/answers", (request, response) -> {
