@@ -8,7 +8,9 @@ import com.google.gson.Gson;
 import main.java.Util.JsonEvent;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.StringTokenizer;
 
 import static spark.Spark.*;
 
@@ -28,6 +30,7 @@ public class Main {
         }
 
         port(port);
+        CorsFilter.apply();
 
         get("/", (req,res)->{
             return "" +
@@ -47,12 +50,15 @@ public class Main {
             Date eventDelationDate=new Date(systemMs);
             String initialStateName=eventDTO.getInitialState();
             StatesNames initialState;
+            String id=generateId(eventDelationDate,events.size());
+
             if(initialStateName.equalsIgnoreCase("FELCV")){
                 initialState=StatesNames.FELCV;
             }else {
                 initialState=StatesNames.MINISTERIO_PUBLICO;
             }
-            Event event=new Event(eventDescription,
+            Event event=new Event(id,
+                                  eventDescription,
                                   eventLocationDescription,
                                   eventDate,
                                   eventDelationDate,
@@ -63,9 +69,10 @@ public class Main {
             return gson.toJson(event);
         });
 
-        get("/event/:pos", (request, response) -> {
+        get("/event/:id", (request, response) -> {
             response.type("application/json");
-            int pos=Integer.parseInt(request.params(":pos"));
+            String eventId=request.params(":id");
+            int pos=getId(eventId);
             if(((events.size()-1)>=pos)&&pos>=0){
                 return gson.toJson(events.get(pos));
             }else {
@@ -104,5 +111,20 @@ public class Main {
                        "<p><strong>¿Quieres que estemos juntos por el resto de nuestras vidas?</strong></p>" +
                    "</div>";
         });
+    }
+
+    private static String generateId(Date date, int pos){
+        Calendar calendarUtil = Calendar.getInstance();
+        calendarUtil.setTime(date);
+        String id=""+calendarUtil.get(Calendar.YEAR);
+        id+=(calendarUtil.get(Calendar.MONTH)+1);
+        id+=calendarUtil.get(Calendar.DAY_OF_MONTH);
+        return id+"-"+pos;
+    }
+
+    private static int getId(String eventId){
+        StringTokenizer stringTokenizer = new StringTokenizer(eventId, "-");
+        stringTokenizer.nextToken();
+        return Integer.parseInt(stringTokenizer.nextToken());
     }
 }
