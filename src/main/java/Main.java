@@ -29,8 +29,8 @@ public class Main {
             port = 4567;
         }
 
-        port(port);
         CorsFilter.apply();
+        port(port);
 
         get("/", (req,res)->{
             return "" +
